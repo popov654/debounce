@@ -1,0 +1,107 @@
+<html>
+   <head>
+      <title>Debounce test</title>
+      <style>
+         body {
+            font-size: 16px;
+            font-family: SegoeUI, Arial, sans-serif;
+         }
+         .container {
+            border: 1px solid #aaa;
+            border-radius: 3px;
+            margin: 40px auto;
+            width: 180px;
+            padding: 12px 18px;
+         }
+         .container .row {
+            padding: 4px;
+         }
+         .container .row > span {
+            margin-right: 8px;
+         }
+         input {
+            padding: 3px;
+            border: 1px solid #aaa;
+            border-radius: 3px;
+         }
+         input[type="radio"] + label {
+            position: relative;
+            top: -1px;
+            margin-left: 2px;
+         }
+         #result {
+            width: 100%;
+            height: 100px;
+            border: 1px solid #aaa;
+            border-radius: 3px;
+            overflow: auto;
+         }
+      </style>
+      <script src="debounce.js"></script>
+      <script>
+         
+         function logCurrentValue(input, target) {
+            var row = document.createElement('div')
+            row.className = 'row'
+            row.innerHTML = '\'' + input.value + '\''
+            target.appendChild(row)
+         }
+         
+         function logString(str, target) {
+            var row = document.createElement('div')
+            row.className = 'row'
+            row.innerHTML = '\'' + str + '\''
+            target.appendChild(row)
+         }
+         
+         function assignHandler() {
+            var input = document.getElementById('input')
+            var target = document.getElementById('result')
+            var func = document.getElementById('sync').checked ?
+               () => {
+                  logCurrentValue(input, target)
+               } : 
+               async function() {
+                  return new Promise(function(resolve) {
+                     var val = document.getElementById('input').value
+                     setTimeout(() => {
+                        logString(val, target)
+                        resolve()
+                     }, 1000)
+                  })
+               }
+            document.getElementById('input').oninput = debounce(func, 800)
+         }
+         
+         window.onload = function() {
+            assignHandler(document.getElementById('input'))
+            document.getElementById('sync').onchange = document.getElementById('async').onchange = () => {
+               document.getElementById('result').innerHTML = ''
+               assignHandler(document.getElementById('input'))
+               document.getElementById('input').focus()
+            }
+            document.getElementById('async').checked = true
+            document.getElementById('input').focus()
+            document.getElementById('clear').addEventListener('click', () => {
+               document.getElementById('result').innerHTML = ''
+               document.getElementById('input').focus()
+            })
+         }
+      </script>
+   </head>
+   <body>
+      <div class="container">
+         <div class="row"><input type="text" id="input" /></div>
+         <div class="row" style="text-align: center">
+            <span><input type="radio" name="mode" id="async" /><label for="async">Async</label></span>
+            <span><input type="radio" name="mode" id="sync" /><label for="sync">Sync</label></span>
+         </div>
+         <div class="row">
+            <div id="result"></div>
+         </div>
+         <div class="row">
+            <button id="clear">Clear</button>
+         </div>
+      </div>
+   </body>
+</html>
